@@ -9,11 +9,14 @@ export default class PublicUser extends BaseModel {
   @column()
   public email: string
 
+  @column()
+  public name: string
+
   @column({ serializeAs: null })
   public password: string
 
   @column()
-  public rememberMeToken: string | null
+  public isActive: boolean
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
@@ -22,7 +25,7 @@ export default class PublicUser extends BaseModel {
   public updatedAt: DateTime
 
   @beforeSave()
-  public static async hashPassword (publicUser: PublicUser) {
+  public static async hashPassword(publicUser: PublicUser) {
     if (publicUser.$dirty.password) {
       publicUser.password = await Hash.make(publicUser.password)
     }
