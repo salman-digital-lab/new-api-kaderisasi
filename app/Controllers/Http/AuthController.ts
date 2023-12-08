@@ -12,12 +12,12 @@ export default class AuthController {
 
       return response.ok({
         status: 'success',
-        message: 'Account succesfully registered. Please check your email',
+        message: 'Account succesfully registered',
         data: user,
       })
     } catch (error) {
-      return response.unprocessableEntity({
-        status: 'failed',
+      return response.internalServerError({
+        status: error.status,
         message: 'Account registration has failed',
         error: error.message,
       })
@@ -44,9 +44,33 @@ export default class AuthController {
         token,
       })
     } catch (error) {
-      return response.unprocessableEntity({
-        status: 'failed',
+      return response.internalServerError({
+        status: error.status,
         message: 'Login has failed',
+        error: error.message,
+      })
+    }
+  }
+
+  public async logout({ auth, response }: HttpContextContract) {
+    try {
+      if (auth.use('api').isLoggedIn) {
+        await auth.use('api').revoke()
+
+        return response.ok({
+          status: 'success',
+          message: 'You have been logget out',
+        })
+      }
+
+      return response.ok({
+        status: 'success',
+        message: 'You have not logged in',
+      })
+    } catch (error) {
+      return response.internalServerError({
+        status: error.status,
+        message: 'Logout has failed',
         error: error.message,
       })
     }
