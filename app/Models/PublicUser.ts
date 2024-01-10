@@ -9,14 +9,8 @@ export default class PublicUser extends BaseModel {
   @column()
   public email: string
 
-  @column()
-  public name: string
-
   @column({ serializeAs: null })
   public password: string
-
-  @column()
-  public isActive: boolean
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
