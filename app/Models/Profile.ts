@@ -1,7 +1,14 @@
 import { DateTime } from 'luxon'
 import { BaseModel, column, hasOne, HasOne } from '@ioc:Adonis/Lucid/Orm'
+import University from './University'
+import Province from './Province'
+import Regency from './Regency'
+import Role from './Role'
 
 export default class Profile extends BaseModel {
+
+  public static table = 'profiles'
+
   @column({ isPrimary: true })
   public id: number
 
@@ -18,16 +25,16 @@ export default class Profile extends BaseModel {
   public phone: string
 
   @column()
+  public line_id: string
+
+  @column()
+  public instagram: string
+
+  @column()
   public province_id: number
 
   @column()
   public regency_id: number
-
-  @column()
-  public district_id: number
-
-  @column()
-  public village_id: number
 
   @column.date()
   public date_of_birthday: DateTime
@@ -36,10 +43,7 @@ export default class Profile extends BaseModel {
   public city_of_birth: string
 
   @column()
-  public from_address: string
-
-  @column()
-  public current_address: string
+  public address: string
 
   @column()
   public university_id: number
@@ -60,12 +64,6 @@ export default class Profile extends BaseModel {
   public role_id: number
 
   @column()
-  public is_active: boolean
-
-  @column()
-  public salt: string
-
-  @column()
   public ssc: number
 
   @column()
@@ -80,15 +78,21 @@ export default class Profile extends BaseModel {
   @column()
   public is_subscribing: boolean
 
-  @column()
-  public file_image: string
-
-  @column.dateTime({ autoCreate: true })
+  @column.dateTime({ autoCreate: true, serializeAs: null })
   public createdAt: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: null })
   public updatedAt: DateTime
 
-  @hasOne(() => Profile)
-  public profile: HasOne<typeof Profile>
+  @hasOne(() => University)
+  public university: HasOne<typeof University>
+
+  @hasOne(() => Province)
+  public province: HasOne<typeof Province>
+
+  @hasOne(() => Regency)
+  public regency: HasOne<typeof Regency>
+
+  @hasOne(() => Role)
+  public role: HasOne<typeof Role>
 }
