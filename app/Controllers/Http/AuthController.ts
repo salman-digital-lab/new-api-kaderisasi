@@ -1,6 +1,7 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import RegisterValidator from 'App/Validators/RegisterValidator'
 import LoginValidator from 'App/Validators/LoginValidator'
+import Database from '@ioc:Adonis/Lucid/Database'
 import Hash from '@ioc:Adonis/Core/Hash'
 import User from 'App/Models/PublicUser'
 import Profile from 'App/Models/Profile'
@@ -8,20 +9,30 @@ import Profile from 'App/Models/Profile'
 export default class AuthController {
   public async register({ request, response }: HttpContextContract) {
     try {
-      const payload = await request.validate(RegisterValidator)
-      const user = await User.create({ email: payload.email, password: payload.password })
-      await Profile.create({ user_id: user.id, name: payload.fullname })
+      const payload: any = await request.validate(RegisterValidator)
 
-      return response.ok({
-        status: 'success',
-        message: 'Account succesfully registered',
-        data: user,
+      await Database.transaction(async (trx) => {
+        const user: any = new User()
+        user.email = payload.email
+        user.password = payload.password
+        user.useTransaction(trx)
+        await user.save()
+
+        await user.related('profile').create({
+          name: payload.fullname,
+        })
+
+        return response.ok({
+          status: 'success',
+          message: 'Account succesfully registered',
+          data: user,
+        })
       })
     } catch (error) {
       return response.internalServerError({
         status: error.status,
         message: 'Account registration has failed',
-        error: error.message,
+        error: error.stack,
       })
     }
   }
@@ -40,7 +51,7 @@ export default class AuthController {
         })
       }
 
-      const profile: any = await Profile.query().where({ user_id: user.id, is_active: 1 }).first()
+      const profile: any = await Profile.findBy('user_id', user.id)
 
       if (!profile) {
         return response.forbidden({

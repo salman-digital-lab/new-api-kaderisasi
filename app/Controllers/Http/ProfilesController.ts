@@ -1,10 +1,8 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import User from 'App/Models/PublicUser'
 import Profile from 'App/Models/Profile'
-import Activity from 'App/Models/Activity'
-import StudentCare from 'App/Models/Studentcare'
+import StudentCare from 'App/Models/StudentCare'
 import ProfileValidator from 'App/Validators/UpdateProfileValidator'
-import Env from '@ioc:Adonis/Core/Env'
 
 export default class ProfilesController {
   public async show({ response, auth }: HttpContextContract) {
@@ -34,8 +32,8 @@ export default class ProfilesController {
   }
 
   public async update({ request, response, auth }: HttpContextContract) {
+    const payload: any = await request.validate(ProfileValidator)
     try {
-      const payload: any = await request.validate(ProfileValidator)
       const id: any = auth.user?.id
       const profile: any = await Profile.findByOrFail('user_id', id)
       const updated: any = await profile.merge(payload).save()
@@ -58,12 +56,7 @@ export default class ProfilesController {
     try {
       const id: any = auth.user?.id
       const history: any = await StudentCare.query()
-        .select(
-          'problem_category',
-          'problem_category_desk',
-          'technical handling',
-          'status handling'
-        )
+        .select('*')
         .where('user_id', id)
         .preload('counselor')
 
@@ -72,12 +65,11 @@ export default class ProfilesController {
         message: 'Get student care data success',
         data: history,
       })
-
     } catch (error) {
       return response.internalServerError({
         status: error.status,
         message: 'Get student care data failed',
-        error: error.message,
+        error: error.stack,
       })
     }
   }

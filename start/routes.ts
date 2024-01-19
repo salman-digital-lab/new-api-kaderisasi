@@ -7,8 +7,9 @@ Route.group(() => {
     Route.post('/logout', 'AuthController.logout').middleware('auth')
   }).prefix('/auth')
   Route.group(() => {
-    Route.get('/', 'AuthController.show')
-    Route.put('/', 'AuthController.update')
+    Route.get('/', 'ProfilesController.show')
+    Route.put('/', 'ProfilesController.update')
+    Route.get('/student-care', 'ProfilesController.studentCare')
   })
     .prefix('/profile')
     .middleware('auth')
