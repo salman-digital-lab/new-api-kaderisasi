@@ -1,6 +1,5 @@
 import { DateTime } from 'luxon'
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
-import { TestContext } from '@japa/runner'
 
 export default class Activity extends BaseModel {
   @column({ isPrimary: true })

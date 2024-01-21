@@ -10,8 +10,6 @@ export default class extends BaseSchema {
       table.string('shortname', 4).notNullable()
       table.string('description', 255).notNullable()
       table.integer('index', 10).notNullable()
-      table.timestamp('created_at', { useTz: true })
-      table.timestamp('updated_at', { useTz: true })
     })
   }
 

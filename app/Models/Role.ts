@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon'
 import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
 
 export default class Role extends BaseModel {
@@ -11,11 +10,11 @@ export default class Role extends BaseModel {
   public name: string
 
   @column()
-  public index: string
+  public index: number
 
-  @column.dateTime({ autoCreate: true, serializeAs: null })
-  public createdAt: DateTime
+  @column()
+  public shortname: string
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: null })
-  public updatedAt: DateTime
+  @column()
+  public description: string
 }

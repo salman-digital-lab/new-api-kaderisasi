@@ -19,7 +19,7 @@ export default class extends BaseSchema {
         .nullable()
         .unsigned()
         .references('id')
-        .inTable('users')
+        .inTable('admin_users')
         .onDelete('CASCADE')
       table
         .enu('status_handling', [
