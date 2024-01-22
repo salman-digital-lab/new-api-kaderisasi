@@ -1,65 +1,70 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import RegisterValidator from 'App/Validators/RegisterValidator'
 import LoginValidator from 'App/Validators/LoginValidator'
+import Database from '@ioc:Adonis/Lucid/Database'
 import Hash from '@ioc:Adonis/Core/Hash'
-import User from 'App/Models/PublicUser'
+import PublicUser from 'App/Models/PublicUser'
 import Profile from 'App/Models/Profile'
 
 export default class AuthController {
   public async register({ request, response }: HttpContextContract) {
     try {
       const payload = await request.validate(RegisterValidator)
-      const user = await User.create({ email: payload.email, password: payload.password })
-      await Profile.create({ user_id: user.id, name: payload.fullname })
 
-      return response.ok({
-        status: 'success',
-        message: 'Account succesfully registered',
-        data: user,
+      await Database.transaction(async (trx) => {
+        const user = new PublicUser()
+        user.email = payload.email
+        user.password = payload.password
+        user.useTransaction(trx)
+        await user.save()
+
+        await user.related('profile').create({
+          name: payload.fullname,
+        })
+
+        return response.ok({
+          message: 'REGISTER_SUCCESS',
+          data: user,
+        })
       })
     } catch (error) {
       return response.internalServerError({
-        status: error.status,
-        message: 'Account registration has failed',
-        error: error.message,
+        message: 'GENERAL_ERROR',
+        error: error.stack,
       })
     }
   }
 
   public async login({ auth, request, response }: HttpContextContract) {
     try {
-      const payload: any = await request.validate(LoginValidator)
+      const payload = await request.validate(LoginValidator)
       const email: string = payload.email
       const password: string = payload.password
-      const user: any = await User.query().where('email', email).firstOrFail()
+      const user = await PublicUser.query().where('email', email).firstOrFail()
 
       if (!(await Hash.verify(user.password, password))) {
         return response.unauthorized({
-          status: 'failed',
-          message: 'Wrong Password',
+          message: 'WRONG_PASSWORD',
         })
       }
 
-      const profile: any = await Profile.query().where({ user_id: user.id, is_active: 1 }).first()
+      const profile = await Profile.findBy('user_id', user.id)
 
       if (!profile) {
         return response.forbidden({
-          status: 'failed',
-          message: 'Account is not active',
+          message: 'INACTIVE_ACCOUNT',
         })
       }
 
       const token = await auth.use('api').generate(user, { expiresIn: '7 days' })
 
       return response.ok({
-        status: 'success',
-        message: 'Login success',
+        message: 'LOGIN_SUCCESS',
         data: { user, profile, token },
       })
     } catch (error) {
       return response.internalServerError({
-        status: error.status,
-        message: 'Login has failed',
+        message: 'GENERAL_ERROR',
         error: error.message,
       })
     }
@@ -71,19 +76,16 @@ export default class AuthController {
         await auth.use('api').revoke()
 
         return response.ok({
-          status: 'success',
-          message: 'You have been logget out',
+          message: 'LOGOUT_SUCCESS',
         })
       }
 
       return response.ok({
-        status: 'success',
-        message: 'You have not logged in',
+        message: 'HAVE_NOT_LOGGED_IN',
       })
     } catch (error) {
       return response.internalServerError({
-        status: error.status,
-        message: 'Logout has failed',
+        message: 'GENERAL_ERROR',
         error: error.message,
       })
     }
